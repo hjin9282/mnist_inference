@@ -1,17 +1,16 @@
-'''This is inference code for mnist dataset '''
+'''This is inference code for MNIST dataset'''
 
 from __future__ import print_function
 import tensorflow.keras
-from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras import backend as K
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import os
 import tensorflow as tf
+import pandas as pd  # ✅ 추가
 
 # Recreate the exact same model, including its weights and the optimizer
 model = tf.keras.models.load_model('saved_model/')
@@ -23,43 +22,43 @@ model.summary()
 print()
 print("----Actual test for digits----")
 
-mnist_label_file_path =  "dataset_test/testlabels/t_labels.txt"
+mnist_label_file_path = "dataset_test/testlabels/t_labels.txt"
 mnist_label = open(mnist_label_file_path, "r")
 cnt_correct = 0
+
 for index in range(10):
-	#-- read a label
-	label = mnist_label.readline()
-	#print(label)
-	#-- formatting the input image (image data)
-	img = Image.open('dataset_test/testimgs/' + str(index+1) + '.png').convert("L")
-	img = img.resize((28,28))
-	im2arr = np.array(img)
-	im2arr = im2arr.reshape(1,28,28,1)
+    #-- read a label
+    label = mnist_label.readline().strip()  # ✅ 개행문자 제거
+    #-- formatting the input image (image data)
+    img = Image.open(f'dataset_test/testimgs/{index+1}.png').convert("L")
+    img = img.resize((28, 28))
+    im2arr = np.array(img)
+    im2arr = im2arr.reshape(1, 28, 28, 1)
+    im2arr = im2arr.astype("float32") / 255.0  # ✅ normalize 추천
 
-	# Predicting the Test set results
-	y_pred = model.predict_classes(im2arr)	#<-- 7 or 4
-	
-	print()
-	pred_label = np.argmax(y_pred) 
-	print("label = {} --> predicted label= {}".format(label, pred_label))
+    # Predicting the Test set results
+    y_pred = model.predict(im2arr)  # ✅ 최신 방식 사용
+    pred_label = np.argmax(y_pred)
 
-	#-- compute the accuracy of the preditcion
-	if int(label)==pred_label:
-		cnt_correct += 1
+    print()
+    print("label = {} --> predicted label = {}".format(label, pred_label))
+
+    if int(label) == pred_label:
+        cnt_correct += 1
 
 #-- Final accuracy
-Final_acc = cnt_correct/10
+Final_acc = cnt_correct / 10
 print()
-print("Final test accuray: %f" %Final_acc)
+print("Final test accuracy: %f" % Final_acc)
 print()
-print('****tensorflow version****:',tf.__version__)
+print('****tensorflow version****:', tf.__version__)
 print()
 
+#-- 정보 출력
 data = {
     '이름': ['방현진'],
     '학번': [2413610],
     '학과': ['인공지능공학부']
 }
-
-df = pandas.DataFrame(data)
+df = pd.DataFrame(data)
 print(df)
