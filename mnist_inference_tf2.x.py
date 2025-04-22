@@ -1,7 +1,6 @@
 '''This is inference code for mnist dataset '''
 
 from __future__ import print_function
-import keras ###############################
 import tensorflow.keras
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
@@ -13,7 +12,7 @@ from PIL import Image
 import numpy as np
 import os
 import tensorflow as tf
-import pandas as pd ########################
+import pandas
 
 # Recreate the exact same model, including its weights and the optimizer
 model = tf.keras.models.load_model('saved_model/')
@@ -29,29 +28,25 @@ mnist_label_file_path =  "dataset_test/testlabels/t_labels.txt"
 mnist_label = open(mnist_label_file_path, "r")
 cnt_correct = 0
 for index in range(10):
-	#-- read a label
-	label = mnist_label.readline().strip()  # <-- 이거 strip() 꼭 추가!
+    #-- read a label
+    label = mnist_label.readline()
+    #print(label)
+    #-- formatting the input image (image data)
+    img = Image.open('dataset_test/testimgs/' + str(index+1) + '.png').convert("L")
+    img = img.resize((28,28))
+    im2arr = np.array(img)
+    im2arr = im2arr.reshape(1,28,28,1)
 
-	#print(label)
-	#-- formatting the input image (image data)
-	img = Image.open('dataset_test/testimgs/' + str(index+1) + '.png').convert("L")
-	img = img.resize((28,28))
-	im2arr = np.array(img)
-	im2arr = im2arr.reshape(1,28,28,1)
+    # Predicting the Test set results
+    y_pred = model.predict_step(im2arr)    #<-- 7 or 4
+    
+    print()
+    pred_label = np.argmax(y_pred)
+    print("label = {} --> predicted label= {}".format(label, pred_label))
 
-	# Predicting the Test set results
-	# Predicting the Test set results
-	y_pred = model.predict(im2arr)  # 이미지 그대로 넣기
-	pred_label = np.argmax(y_pred)  # 확률 가장 높은 클래스
-	#<-- 7 or 4
-	
-	print()
-	pred_label = np.argmax(y_pred) 
-	print("label = {} --> predicted label= {}".format(label, pred_label))
-
-	#-- compute the accuracy of the preditcion
-	if int(label)==pred_label:
-		cnt_correct += 1
+    #-- compute the accuracy of the preditcion
+    if int(label)==pred_label:
+        cnt_correct += 1
 
 #-- Final accuracy
 Final_acc = cnt_correct/10
@@ -67,5 +62,5 @@ data = {
     '학과': ['인공지능공학부']
 }
 
-df = pd.DataFrame(data) ######################
+df = pandas.DataFrame(data)
 print(df)
